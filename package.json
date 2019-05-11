@@ -2,7 +2,7 @@
   "name": "hug",
   "version": "1.0.0",
   "description": "Bot for the Hands Up Generation Discord",
-  "main": "out/bot.js",
+  "main": "start.js",
   "dependencies": {
     "discord.js": "^11.4.2"
   },
