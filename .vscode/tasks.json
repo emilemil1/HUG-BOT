@@ -1,0 +1,35 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "echo",
+			"type": "shell",
+			"command": "echo Hello"
+		},
+		{
+			"type": "npm",
+			"script": "install",
+			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "build",
+			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "rebuild",
+			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "buildRun",
+			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "run",
+			"problemMatcher": []
+		}
+	]
+}

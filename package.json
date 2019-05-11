@@ -1,0 +1,14 @@
+{
+  "name": "hug",
+  "version": "1.0.0",
+  "description": "Bot for the Hands Up Generation Discord",
+  "main": "out/bot.js",
+  "dependencies": {
+    "discord.js": "^11.4.2"
+  },
+  "scripts": {
+    "start": "node start"
+  },
+  "author": "Emil Norén",
+  "license": "ISC"
+}
