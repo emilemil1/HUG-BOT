@@ -32,9 +32,16 @@ class Bot {
 				process.stdin.write("exit");
 			})
 			.on("SIGINT", () => {
+				for (let func of process.stdin) {
+					console.log(func);
+				}
 				process.stdin.write("exit");
 			})
 			.on("uncaughtException", (err) => {
+				for (let func of process.stdin) {
+					console.log(func);
+				}
+				console.log(err);
 				error = err;
 				process.stdin.write("exit");
 			});
