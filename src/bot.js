@@ -5,6 +5,7 @@ const fs = require("fs");
 const firebaseAdmin = require("firebase-admin");
 let database;
 let databaseValid = false;
+let error;
 
 class Bot {
 	constructor() {
@@ -24,9 +25,16 @@ class Bot {
 			this._func.processMessage(msg);
 		});
 		process
-			.on("SIGTERM", () => this.exit())
-			.on("SIGINT", () => this.exit())
-			.on("uncaughtException", (error) => this.exit(error));
+			.on("SIGTERM", () => {
+				process.stdin.write("exit");
+			})
+			.on("SIGINT", () => {
+				process.stdin.write("exit");
+			})
+			.on("uncaughtException", (error) => {
+				error = error;
+				process.stdin.write("exit");
+			});
 	}
 
 	login() {
@@ -38,7 +46,7 @@ class Bot {
 			});
 	}
 
-	exit(error) {
+	exit() {
 		if (error) {
 			console.log(error);
 		}
@@ -47,7 +55,7 @@ class Bot {
 			this._client.destroy();
 		}
 		
-		if (databaseValid && this.changedConfigs) {
+		if (databaseValid) {
 			const writeBatch = database.batch();
 			for (const server of Object.entries(this.changedConfigs)) {
 				writeBatch.set(database.doc("servers/"+server[0]), server[1], {merge: true});
