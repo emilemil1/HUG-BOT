@@ -3,8 +3,14 @@
   "version": "1.0.0",
   "description": "Bot for the Hands Up Generation Discord",
   "main": "start.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emilemil1/HUG-BOT.git"
+  },
   "dependencies": {
-    "discord.js": "^11.4.2"
+    "discord.js": "^11.4.2",
+    "firebase-admin": "^7.3.0",
+    "request": "^2.88.0"
   },
   "scripts": {
     "start": "node start"
