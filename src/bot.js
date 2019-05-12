@@ -14,6 +14,7 @@ class Bot {
 		this._client = new Discord.Client();
 		this._func = new BotFunctions(this);
 		this._store = loadStore();
+
 		this._client.on("ready", () => {
 			console.log(`Logged in as ${this._client.user.tag}!`);
 			this._func.takeInput();
@@ -46,7 +47,7 @@ class Bot {
 			this._client.destroy();
 		}
 		
-		if (databaseValid) {
+		if (databaseValid && this.changedConfigs) {
 			const writeBatch = database.batch();
 			for (const server of Object.entries(this.changedConfigs)) {
 				writeBatch.set(database.doc("servers/"+server[0]), server[1], {merge: true});
@@ -119,26 +120,12 @@ class BotFunctions {
 		while (command !== "exit") {
 			command = await new Promise((resolve) => {
 				reader.question("> ", async answer => {
-					this.processInput(answer);
 					resolve(answer);
 				});
 			});
 		}
 		reader.close();
 		this.bot.exit();
-	}
-
-	async processInput(input) {
-		switch(input) {
-		case "hello":
-			this.consoleReply("HI!");
-			break;
-		}
-		return input;
-	}
-
-	consoleReply(msg) {
-		console.log("HUG-BOT: " + msg);
 	}
 
 	async processMessage(msg) {
