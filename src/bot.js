@@ -24,9 +24,9 @@ class Bot {
 			this._func.processMessage(msg);
 		});
 		process
-			.on("SIGTERM", this.exit)
-			.on("SIGINT", this.exit)
-			.on("uncaughtException", this.exit);
+			.on("SIGTERM", () => this.exit())
+			.on("SIGINT", () => this.exit())
+			.on("uncaughtException", (error) => this.exit(error));
 	}
 
 	login() {
