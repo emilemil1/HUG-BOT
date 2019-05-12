@@ -3,7 +3,12 @@ const Tools = require("../misc/tools");
 class Config {
 	constructor(bot) {
 		this.bot = bot;
-		bot.registerPlugin("Configuration", "config", this);
+		const plugin = Tools.buildPlugin(this)
+			.setName("Configuration")
+			.setCommands(["config"])
+			.setGroup("configuration");
+		
+		bot.registerPlugin(plugin);
 	}
 
 	process(cmd, parts) {
@@ -12,60 +17,61 @@ class Config {
 			return;
 		}
 
-		const command = this.bot._commandMap.get(parts[1]);
+		const command = this.bot.commands.get(parts[1]);
 
-		if (!command || !this.bot.configs.has(command.names[0])) {
+		if (!command || !this.bot.plugins.has(command)) {
 			return;
 		}
 
 		if (parts.length === 2) {
-			this.listSingle(cmd, command);
+			this.listSingle(cmd, this.bot.plugins.get(command));
 			return;
 		}
 
 		if (parts.length >= 3) {
-			this.setSingle(cmd, command, parts[2]);
+			this.setSingle(cmd, this.bot.plugins.get(command), parts[2]);
 			return;
 		}
 	}
 
-	setSingle(cmd, command, value) {
-		const newValue = this.validate(command.names[0], value);
+	setSingle(cmd, plugin, value) {
+		const newValue = this.validate(plugin.config, value);
 		if (newValue === undefined) {
-			cmd.channel.send(Tools.shortEmbed("Configuration", `**${command.title}** cannot be set to '${value}'`));
+			cmd.channel.send(Tools.shortEmbed("Configuration", `**${plugin.name}** cannot be set to '${value}'`));
 			return;
 		}
 
 		const server = this.bot.getServer(cmd.guild.id, true);
 		const changedConfig = this.bot.changedConfigs[cmd.guild.id] ? this.bot.changedConfigs[cmd.guild.id] : this.bot.changedConfigs[cmd.guild.id] = {};
-		server[command.names[0]] = changedConfig[command.names[0]] = newValue.value;
+		server[plugin.commands[0]] = changedConfig[plugin.commands[0]] = newValue.value;
 
-		cmd.channel.send(Tools.shortEmbed("Configuration", `**${command.title}** has ${newValue.has}`));
+		cmd.channel.send(Tools.shortEmbed("Configuration", `**${plugin.name}** has ${newValue.has}`));
 	}
 
-	listSingle(cmd, command) {
-		const value = this.bot.getConfig(command.names[0], cmd.guild.id);
+	listSingle(cmd, plugin) {
+		const value = this.bot.getConfig(plugin.commands[0], cmd.guild.id);
 		if (value === undefined) {
 			return;
 		}
-		cmd.channel.send(Tools.shortEmbed("Configuration", `**${command.title}** is ${this.validate(command.names[0], value).is}`));
+		cmd.channel.send(Tools.shortEmbed("Configuration", `**${plugin.name}** is ${this.validate(plugin.config, value).is}`));
 	}
 
 	listAll(cmd) {
 		const server = this.bot.getServer(cmd.guild.id);
 
 		let message = "";
-		let command;
-		for (const cfg of Array.from(this.bot.configs.keys()).sort()) {
-			command = this.bot._commandMap.get(cfg);
-			message += `**${command.title} **(.${command.names.join(", .")})  :  ${this.validate(cfg, server[cfg]).text}\n`;
+		for (const plugin of Array.from(this.bot.plugins.values()).filter(v => v.config !== undefined).sort()) {
+			message += `**${plugin.name} **(.${plugin.commands.join(" .")})  :  ${this.validate(plugin.config, server[plugin.commands[0]]).text}\n`;
+		}
+
+		if (message === "") {
+			return;
 		}
 
 		cmd.channel.send(Tools.shortEmbed("Configuration", message));
 	}
 
-	validate(setting, value) {
-		const config = this.bot.configs.get(setting);
+	validate(config, value) {
 		const type = config.type;
 		if (value === undefined) {
 			value = String(config.default);

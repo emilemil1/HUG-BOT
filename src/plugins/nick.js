@@ -3,7 +3,10 @@ const Tools = require("../misc/tools");
 class Nickname {
 	constructor(bot) {
 		this.bot = bot;
-		bot.registerPlugin("Nickname", ["nick", "nickname"], this);
+		const plugin = Tools.buildPlugin(this)
+			.setName("BOT Nickname")
+			.setCommands(["nick", "nickname"]);
+		this.bot.registerPlugin(plugin);
 	}
 
 	process(cmd, parts) {

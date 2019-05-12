@@ -9,9 +9,9 @@ let reader;
 
 class Bot {
 	constructor() {
-		this.configs = new Map();
 		this.changedConfigs = {};
-		this._commandMap = new Map();
+		this.plugins = new Map();
+		this.commands = new Map();
 		this._client = new Discord.Client();
 		this._func = new BotFunctions(this);
 		this._store = loadStore();
@@ -67,30 +67,23 @@ class Bot {
 
 	getConfig(name, guildId) {
 		const server = this.getServer(guildId);
-		if (server[name] === undefined) {
-			const config = this.configs.get(name);
-			return config === undefined ? undefined: config.default;
+
+		if (server[name]) {
+			return server[name];
 		}
 
-		return server[name];
+		const config = this.plugins.get(name).config;
+		return config === undefined ? undefined: config.default;
 	}
 
-	registerPlugin(title, names, plugin, configObject) {
-		if (!Array.isArray(names)) {
-			names = [names];
+	registerPlugin(plugin) {
+		if (plugin.payload) {
+			plugin = plugin.payload;
 		}
+		this.plugins.set(plugin.commands[0], plugin);
 
-		const command = {
-			title: title,
-			names: names,
-			plugin: plugin
-		};
-		for (const name of names) {
-			this._commandMap.set(name, command);
-		}
-
-		if (configObject) {
-			this.configs.set(names[0], configObject);
+		for (const command of plugin.commands) {
+			this.commands.set(command, plugin.commands[0]);
 		}
 	}
 
@@ -147,13 +140,22 @@ class BotFunctions {
 
 	async processCommand(cmd) {
 		const parts = cmd.content.split(" ");
-		const command = this.bot._commandMap.get(parts[0]);
+		const command = this.bot.commands.get(parts[0]);
 		if (command === undefined) {
 			console.log("Unknown command used: " + cmd);
 			return;
 		}
-		command.plugin.process(cmd, parts);
+
+		if (!verifyRolePermission(cmd, parts[0])) {
+			return;
+		}
+
+		this.bot.plugins.get(command).plugin.process(cmd, parts);
 	}
+}
+
+function verifyRolePermission() {
+	return true;
 }
 
 

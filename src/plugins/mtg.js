@@ -4,10 +4,12 @@ const Tools = require("../misc/tools");
 class MTG {
 	constructor(bot) {
 		this.bot = bot;
-		bot.registerPlugin("Magic The Gathering", ["mtg", "magic"], this, {
-			type: "boolean",
-			default: false
-		});
+		const plugin = Tools.buildPlugin(this)
+			.setName("Magic: The Gathering")
+			.setCommands(["mtg", "magic"])
+			.setConfig("boolean", false);
+
+		bot.registerPlugin(plugin);
 	}
 
 	process(cmd, parts) {
@@ -24,7 +26,7 @@ class MTG {
 				return;
 			}
 
-			this.postEmbed([body], cmd, url);
+			this.postEmbed(body, cmd, url, 1);
 		});
 	}
 
@@ -35,19 +37,19 @@ class MTG {
 				return;
 			}
 
-			this.postEmbed(body.data, cmd, search);
+			this.postEmbed(body.data[0], cmd, search, body.total_cards);
 		});
 	}
 
-	postEmbed(cards, cmd, url) {
+	postEmbed(cards, cmd, url, count) {
 		const embed = Tools.stubEmbed()
-			.setImage(cards[0].image_uris.border_crop)
+			.setImage(cards.image_uris.border_crop)
 			.setAuthor("Magic The Gathering")
-			.setDescription(`Price: ${cards[0].prices.eur} EUR  |  ${cards[0].prices.usd} USD`);
+			.setDescription(`Price: ${cards.prices.eur} EUR  |  ${cards.prices.usd} USD`);
 
-		if (cards.length > 1) {
+		if (count > 1) {
 			embed
-				.setTitle("All Search Results")
+				.setTitle(`All Search Results (${count})`)
 				.setURL(`https://scryfall.com/search?q=${url}`);
 		}
 
