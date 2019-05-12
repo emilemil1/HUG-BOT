@@ -31,8 +31,8 @@ class Bot {
 			.on("SIGINT", () => {
 				process.stdin.write("exit");
 			})
-			.on("uncaughtException", (error) => {
-				error = error;
+			.on("uncaughtException", (err) => {
+				error = err;
 				process.stdin.write("exit");
 			});
 	}
