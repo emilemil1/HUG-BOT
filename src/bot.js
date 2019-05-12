@@ -5,7 +5,7 @@ const fs = require("fs");
 const firebaseAdmin = require("firebase-admin");
 let database;
 let databaseValid = false;
-let error;
+let reader;
 
 class Bot {
 	constructor() {
@@ -26,24 +26,14 @@ class Bot {
 		});
 		process
 			.on("SIGTERM", () => {
-				for (let func of process.stdin) {
-					console.log(func);
-				}
-				process.stdin.write("exit");
+				this.exit();
 			})
 			.on("SIGINT", () => {
-				for (let func of process.stdin) {
-					console.log(func);
-				}
-				process.stdin.write("exit");
+				this.exit();
 			})
 			.on("uncaughtException", (err) => {
-				for (let func of process.stdin) {
-					console.log(func);
-				}
 				console.log(err);
-				error = err;
-				process.stdin.write("exit");
+				this.exit();
 			});
 	}
 
@@ -52,13 +42,12 @@ class Bot {
 			.catch((error) => {
 				console.error(error);
 				Diagnostics.diagnoseLogin(this._client, error.message);
-				
 			});
 	}
 
 	exit() {
-		if (error) {
-			console.log(error);
+		if (reader) {
+			reader.close();
 		}
 
 		if (this._client) {
@@ -130,7 +119,7 @@ class BotFunctions {
 	}
 
 	async takeInput() {
-		const reader = readline.createInterface({
+		reader = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout
 		});
@@ -141,8 +130,10 @@ class BotFunctions {
 					resolve(answer);
 				});
 			});
+			if (command === "SIGTERM") {
+				process.kill(process.pid, "SIGTERM");
+			}
 		}
-		reader.close();
 		this.bot.exit();
 	}
 
@@ -161,7 +152,6 @@ class BotFunctions {
 			console.log("Unknown command used: " + cmd);
 			return;
 		}
-
 		command.plugin.process(cmd, parts);
 	}
 }
