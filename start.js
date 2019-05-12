@@ -6,8 +6,10 @@ if (fs.existsSync("secrets.json")) {
 	secrets = JSON.parse(fs.readFileSync("secrets.json"));
 }
 
-if (process.env.TOKEN === undefined && secrets.TOKEN !== undefined) {
-	process.env.TOKEN = secrets.TOKEN;
+for (const key in secrets) {
+	if (process.env[key] === undefined && secrets[key] !== undefined) {
+		process.env[key] = secrets[key];
+	}
 }
 
 //flags
