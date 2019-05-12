@@ -26,6 +26,9 @@ class Bot {
 		});
 		process
 			.on("SIGTERM", () => {
+				for (let func of process.stdin) {
+					console.log(func);
+				}
 				process.stdin.write("exit");
 			})
 			.on("SIGINT", () => {
