@@ -165,6 +165,7 @@ class BotFunctions {
 function loadStore() {
 	const serviceAccount = require("../acc.json");
 	serviceAccount.private_key = process.env.firebase_private_key;
+	console.log(serviceAccount);
 	firebaseAdmin.initializeApp({
 		credential: firebaseAdmin.credential.cert(serviceAccount),
 		databaseURL: "https://hug-bot.firebaseio.com"
