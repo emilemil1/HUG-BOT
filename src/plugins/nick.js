@@ -5,11 +5,17 @@ class Nickname {
 		this.bot = bot;
 		const plugin = Tools.buildPlugin(this)
 			.setName("BOT Nickname")
+			.setAdmin(true)
 			.setCommands(["nick", "nickname"]);
-		this.bot.registerPlugin(plugin);
+
+		this.plugin = bot.registerPlugin(plugin);
 	}
 
 	process(cmd, parts) {
+		if (parts === 1) {
+			return;
+		}
+
 		const nickname = cmd.content.substring(parts[0].length+1);
 
 		cmd.guild.member(this.bot._client.user).setNickname(nickname);

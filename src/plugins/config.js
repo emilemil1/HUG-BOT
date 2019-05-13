@@ -6,9 +6,9 @@ class Config {
 		const plugin = Tools.buildPlugin(this)
 			.setName("Configuration")
 			.setCommands(["config"])
-			.setGroup("configuration");
+			.setAdmin(true);
 		
-		bot.registerPlugin(plugin);
+		this.plugin = bot.registerPlugin(plugin);
 	}
 
 	process(cmd, parts) {

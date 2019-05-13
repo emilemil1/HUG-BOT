@@ -9,7 +9,7 @@ class MTG {
 			.setCommands(["mtg", "magic"])
 			.setConfig("boolean", false);
 
-		bot.registerPlugin(plugin);
+		this.plugin = bot.registerPlugin(plugin);
 	}
 
 	process(cmd, parts) {
@@ -19,7 +19,14 @@ class MTG {
 		
 		const url = encodeURIComponent(cmd.content.substring(parts[0].length+1));
 
-		request("https://api.scryfall.com/cards/named?fuzzy=" + url, (error, response, body) => {
+		const requestOptions = {
+			url: "https://api.scryfall.com/cards/named?fuzzy=" + url,
+			headers: {
+				"Cache-Control": "max-age=86400"
+			}
+		};
+
+		request(requestOptions, (error, response, body) => {
 			body = JSON.parse(body);
 			if (body.object === "error" && body.type === "ambiguous") {
 				this.extendSearch(url, cmd);
@@ -31,7 +38,14 @@ class MTG {
 	}
 
 	extendSearch(search, cmd) {
-		request("https://api.scryfall.com/cards/search?q=" + search, (error, response, body) => {
+		const requestOptions = {
+			url: "https://api.scryfall.com/cards/search?q=" + search,
+			headers: {
+				"Cache-Control": "max-age=86400"
+			}
+		};
+
+		request(requestOptions, (error, response, body) => {
 			body = JSON.parse(body);
 			if (body.object === "error") {
 				return;
@@ -41,19 +55,57 @@ class MTG {
 		});
 	}
 
-	postEmbed(cards, cmd, url, count) {
+	postEmbed(card, cmd, url, count) {
+		const priceString = this.getPrice(card.prices.usd, card.prices.eur);
+		const format = this.getFormat(card.legalities);
 		const embed = Tools.stubEmbed()
-			.setImage(cards.image_uris.border_crop)
-			.setAuthor("Magic The Gathering")
-			.setDescription(`Price: ${cards.prices.eur} EUR  |  ${cards.prices.usd} USD`);
+			.setImage(card.image_uris.border_crop)
+			.setAuthor(`${card.name} (${card.set.toUpperCase()})`, undefined, card.scryfall_uri)
+			.setDescription(`${format}${priceString}`);
 
 		if (count > 1) {
 			embed
-				.setTitle(`All Search Results (${count})`)
+				.setTitle(`All Results (${count})`)
 				.setURL(`https://scryfall.com/search?q=${url}`);
 		}
 
 		cmd.channel.send(embed);
+	}
+
+	getPrice(usd, eur) {
+		let string = "";
+		if (usd || eur) {
+			string += " • ";
+		}
+		if (usd) {
+			string += `$${usd}`;
+		}
+		if (usd, eur) {
+			string += " • ";
+		}
+		if (eur) {
+			string += `€${eur}`;
+		}
+		return string;
+	}
+
+	getFormat(legalities) {
+		if (legalities.standard === "legal") {
+			return "Standard";
+		}
+		if (legalities.modern === "legal") {
+			return "Modern";
+		}
+		if (legalities.legacy === "legal") {
+			return "Legacy";
+		}
+		if (legalities.vintage === "legal") {
+			return "Vintage";
+		}
+		if (legalities.commander === "legal") {
+			return "Commander";
+		}
+		return "Not Legal";
 	}
 }
 

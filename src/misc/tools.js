@@ -22,7 +22,7 @@ class PluginBuilder {
 		this.payload = {
 			plugin: plugin
 		};
-		this.setGroup("plugin");
+		this.setAdmin(false);
 	}
 
 	setName(name) {
@@ -35,8 +35,8 @@ class PluginBuilder {
 		return this;
 	}
 
-	setGroup(group) {
-		this.payload.group = group;
+	setAdmin(bool) {
+		this.payload.admin = bool;
 		return this;
 	}
 
