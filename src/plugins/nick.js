@@ -12,7 +12,7 @@ class Nickname {
 	}
 
 	process(cmd, parts) {
-		if (parts === 1) {
+		if (parts.length === 1) {
 			return;
 		}
 

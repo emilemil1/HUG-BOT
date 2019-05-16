@@ -13,10 +13,10 @@ class MTG {
 	}
 
 	process(cmd, parts) {
-		if (!this.bot.getConfig("mtg", cmd.guild.id)) {
+		if (parts.length === 1) {
 			return;
 		}
-		
+
 		const url = encodeURIComponent(cmd.content.substring(parts[0].length+1));
 
 		const requestOptions = {
@@ -28,9 +28,14 @@ class MTG {
 
 		request(requestOptions, (error, response, body) => {
 			body = JSON.parse(body);
-			if (body.object === "error" && body.type === "ambiguous") {
-				this.extendSearch(url, cmd);
-				return;
+			if (body.object === "error") {
+				if (body.status === 404) {
+					return;
+				}
+				if (body.type === "ambiguous") {
+					this.extendSearch(url, cmd);
+					return;
+				}
 			}
 
 			this.postEmbed(body, cmd, url, 1);
@@ -56,7 +61,7 @@ class MTG {
 	}
 
 	postEmbed(card, cmd, url, count) {
-		const priceString = this.getPrice(card.prices.usd, card.prices.eur);
+		const priceString = this.getPrice(card.prices);
 		const format = this.getFormat(card.legalities);
 		const embed = Tools.stubEmbed()
 			.setImage(card.image_uris.border_crop)
@@ -72,7 +77,9 @@ class MTG {
 		cmd.channel.send(embed);
 	}
 
-	getPrice(usd, eur) {
+	getPrice(prices) {
+		const usd = prices.usd;
+		const eur = prices.eur;
 		let string = "";
 		if (usd || eur) {
 			string += " • ";
@@ -101,6 +108,9 @@ class MTG {
 		}
 		if (legalities.vintage === "legal") {
 			return "Vintage";
+		}
+		if (legalities.vintage === "restricted") {
+			return "Vintage (Restricted)";
 		}
 		if (legalities.commander === "legal") {
 			return "Commander";

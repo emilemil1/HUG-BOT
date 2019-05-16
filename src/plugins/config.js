@@ -36,6 +36,7 @@ class Config {
 
 	setSingle(cmd, plugin, value) {
 		const newValue = this.validate(plugin.config, value);
+
 		if (newValue === undefined) {
 			cmd.channel.send(Tools.shortEmbed("Configuration", `**${plugin.name}** cannot be set to '${value}'`));
 			return;
