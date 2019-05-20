@@ -1,0 +1,4 @@
+{
+	"databaseType": "firebase",
+	"databaseURL": "https://hug-bot.firebaseio.com"
+}
