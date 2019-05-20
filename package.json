@@ -16,5 +16,6 @@
     "start": "node start"
   },
   "author": "Emil Norén",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {}
 }

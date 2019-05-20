@@ -1,22 +1,16 @@
 const fs = require("fs");
 
 //init
-let secrets = {};
-if (fs.existsSync("secrets.json")) {
-	secrets = JSON.parse(fs.readFileSync("secrets.json"));
+if (!fs.existsSync("botconfig.json")) {
+	console.log("Missing configuration file: 'botconfig.json'");
+	process.exit(0);
 }
-
-for (const key in secrets) {
-	if (process.env[key] === undefined && secrets[key] !== undefined) {
-		process.env[key] = secrets[key];
-	}
-}
+const botConfig = JSON.parse(fs.readFileSync("botconfig.json"));
 
 //flags
 const i = process.argv.indexOf("-t");
-process.env.TOKEN = i === -1 ? process.env.TOKEN : process.argv[i + 1];
+botConfig.discordToken = i === -1 ? botConfig.discordToken : process.argv[i + 1];
 
 //run
-const Bot = require("./src/bot");
-const bot = new Bot();
-bot.login();
+const Bot = require("./out/bot");
+new Bot(botConfig);
