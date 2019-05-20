@@ -112,13 +112,14 @@ class Bot {
         plugin.handler(input);
     }
     verifyRole(input) {
-        const guildRoles = this.getRoles(input.guild.id);
-        if (!guildRoles._instances[input.plugin.id]) {
+        console.log(this.guilds[input.guild.id]);
+        if (!this.guilds[input.guild.id].RPInstances[input.plugin.id]) {
             if (!input.plugin.extendedPermissions) {
                 return true;
             }
             return false;
         }
+        const guildRoles = this.getRoles(input.guild.id);
         for (const memberRole in input.message.member.roles) {
             if (guildRoles[memberRole][input.plugin.id]) {
                 return true;

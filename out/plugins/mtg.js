@@ -53,6 +53,7 @@ class MTG {
         if (set) {
             url += `%20set:'${set}'`;
         }
+        url += "&order=released";
         const requestOptions = {
             url: url,
             headers: {
