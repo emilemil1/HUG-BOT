@@ -136,6 +136,7 @@ export class Bot {
 	}
 
 	private verifyRole(input: Input) {
+		console.log(this.guilds[input.guild.id])
 		if (!this.guilds[input.guild.id].RPInstances[input.plugin.id]) {
 			if (!input.plugin.extendedPermissions) {
 				return true;
