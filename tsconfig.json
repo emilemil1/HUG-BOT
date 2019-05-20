@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "outDir": "out",
+		"target": "esnext",
+		"strict": true,
+        "moduleResolution": "node",
+        "module": "commonjs",
+        "sourceMap": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "compileOnSave": true
+}
