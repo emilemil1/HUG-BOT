@@ -21,11 +21,17 @@ class PluginTools {
     getRoles(guildID) {
         return this.functions.getRoles(guildID);
     }
+    getRolePluginCounts(guildID) {
+        return this.functions.getRolePluginCounts(guildID);
+    }
     markForUpdate(guildID) {
         this.functions.markForUpdate(guildID);
     }
     sudo(input) {
         this.functions.sudo(input);
+    }
+    getBotConfig() {
+        return this.functions.getBotConfig();
     }
 }
 PluginTools.color = "#23A5E3";

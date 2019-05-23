@@ -12,7 +12,8 @@ declare global {
 		discordToken: string,
 		databasePrivateKey: string,
 		databaseType: string,
-		databaseURL: string
+		databaseURL: string,
+		imgurAccessToken: string
 	}
 
 	type PluginConfigOption = string|Array<string>;
@@ -69,7 +70,7 @@ declare global {
 	}
 
 	interface Roles {
-		[index: string]: {[index: string]: undefined|number}
+		[index: string]: {[index: string]: undefined|number|null}
 	}
 
 	interface BotExposedFunctions_Plugin {
@@ -77,7 +78,9 @@ declare global {
 		client: Client
 		getRoles: (guildID: GuildID) => Roles
 		markForUpdate: (guildID: GuildID) => void
-		sudo: (input: Input) => void
+		sudo: (input: Input) => void,
+		getRolePluginCounts: (guildID: GuildID) => {[index: string]: undefined|number},
+		getBotConfig: () => BotConfig
 	}
 
 	interface PluginManagerExposedFunctions extends BotExposedFunctions_Plugin {

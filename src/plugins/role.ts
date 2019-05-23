@@ -24,18 +24,19 @@ class Role {
 			this.remove(input);
 			return;
 		}
-		if (input.parts.length >= 2) {
-			this.listSingle(input);
-			return;
-		}
 		if (input.parts.length === 1) {
 			this.listAll(input)
 			return;
 		}
+		this.listSingle(input);
 	}
 
 	listAll(input: Input) {
 		const roles = input.guild.roles;
+
+		if (Object.keys(roles).length === 1) {
+			return;
+		}
 
 		let embed = this.tools.embed;
 		roles.forEach(role => {
@@ -47,7 +48,7 @@ class Role {
 						const plugin = this.tools.plugins.get(pluginID)!;
 						reply += `**${plugin.name}** (.${plugin.commands.join(" .")})\n`;
 					}
-					embed.addField(`${role.name}`, reply === "" ? "n/a" : reply);
+					embed.addField(`${role.name}`, reply === "" ? "None" : reply);
 				}
 			}
 			
@@ -58,6 +59,7 @@ class Role {
 	listSingle(input: Input) {
 		const role = input.guild.roles.find(r => r.name.toLowerCase() === input.content.substring(input.parts[0].length+1).toLowerCase());
 		if (!role) {
+			this.listSinglePlugin(input);
 			return;
 		}
 		const localRole = this.tools.getRoles(input.guild.id)[role.id]
@@ -70,7 +72,32 @@ class Role {
 			const plugin = this.tools.plugins.get(pluginID)!;
 			reply += `**${plugin.name}** (.${plugin.commands.join(" .")})\n`;
 		}
-		input.channel.send(this.tools.embed.addField(`Role Permissions - ${role.name}`, reply === "" ? "n/a" : reply));
+		input.channel.send(this.tools.embed.addField(`Role Permissions - ${role.name}`, reply === "" ? "None" : reply));
+	}
+
+	listSinglePlugin(input: Input) {
+		const plugin = input.content.substring(input.parts[0].length+1).toLowerCase();
+		const plug = this.tools.plugins.get(plugin);
+		if (!plug) {
+			return;
+		}
+		if (!this.tools.getRolePluginCounts(input.guild.id)[plugin]) {
+			if (plug.extendedPermissions) {
+				input.channel.send(this.tools.embed.addField(`Role Permissions - ${plug.name}`, "Available to server owner."));
+			} else {
+				input.channel.send(this.tools.embed.addField(`Role Permissions - ${plug.name}`, "Available to all users."));
+			}
+			return;
+		}
+		const roles = this.tools.getRoles(input.guild.id);
+		let reply = "";
+
+		for (const role of Object.entries(roles)) {
+			if (!role[1][plugin]) {
+				continue;
+			}
+			reply += `${role[0]}\n`;
+		}
 	}
 
 	remove(input: Input) {
@@ -78,18 +105,19 @@ class Role {
 		if (!ext) {
 			return;
 		}
-		if (!ext.roles[ext.plugin.id]) {
+		if (ext.roles[ext.plugin.id] === undefined) {
 			return;
 		}
 
 		delete ext.roles[ext.plugin.id];
-		const instances = this.tools.getRoles(input.guild.id)._instances;
+		const instances = this.tools.getRolePluginCounts(input.guild.id);
 		instances[ext.plugin.id]!--
 		if (instances[ext.plugin.id] === 0) {
 			delete instances[ext.plugin.id];
 		}
+		this.tools.markForUpdate(input.guild.id);
 
-		input.channel.send(this.tools.embed.addField("Roles", `Revoking role **${ext.role.name}** access to plugin **${ext.plugin.name} **(.${ext.plugin.commands.join(" .")})`));
+		input.channel.send(this.tools.embed.addField("Roles", `Revoking role **${ext.role.name}** access to plugin **${ext.plugin.name}**`));
 	}
 
 	add(input: Input) {
@@ -97,18 +125,19 @@ class Role {
 		if (!ext) {
 			return;
 		}
-		if (ext.roles[ext.plugin.id]) {
+		if (ext.roles[ext.plugin.id] === undefined) {
 			return;
 		}
 
-		ext.roles[ext.plugin.id] = undefined;
-		const instances = this.tools.getRoles(input.guild.id)._instances;
+		ext.roles[ext.plugin.id] = null;
+		const instances = this.tools.getRolePluginCounts(input.guild.id);
 		if (instances[ext.plugin.id] === undefined) {
 			instances[ext.plugin.id] = 0;
 		}
 		instances[ext.plugin.id]!++
+		this.tools.markForUpdate(input.guild.id);
 
-		input.channel.send(this.tools.embed.addField("Roles", `Giving role **${ext.role.name}** access to plugin **${ext.plugin.name} **(.${ext.plugin.commands.join(" .")})`));
+		input.channel.send(this.tools.embed.addField("Roles", `Giving role **${ext.role.name}** access to plugin **${ext.plugin.name}**`));
 	}
 
 	private extract(input: Input) {
@@ -126,7 +155,7 @@ class Role {
 			return;
 		}
 
-		const roles = this.tools.getRoles(input.guild.id)[roleName]
+		const roles = this.tools.getRoles(input.guild.id)[role.id];
 		if (!roles) {
 			return;
 		}

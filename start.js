@@ -14,6 +14,10 @@ if (process.env.databasePrivateKey) {
 	botConfig.databasePrivateKey = process.env.databasePrivateKey;
 }
 
+if (process.env.imgurAccessToken) {
+	botConfig.imgurAccessToken = process.env.imgurAccessToken;
+}
+
 if (fs.existsSync("botsecrets.json")) {
 	botConfig = {
 		...botConfig,
@@ -22,10 +26,13 @@ if (fs.existsSync("botsecrets.json")) {
 }
 
 //flags
-const i = process.argv.indexOf("-t");
-botConfig.discordToken = i === -1 ? botConfig.discordToken : process.argv[i + 1];
-const d = process.argv.indexOf("-d");
-botConfig.databasePrivateKey = d === -1 ? botConfig.databasePrivateKey : process.argv[d + 1];
+const dt = process.argv.indexOf("-dt");
+botConfig.discordToken = dt === -1 ? botConfig.discordToken : process.argv[dt + 1];
+const dpk = process.argv.indexOf("-dpk");
+botConfig.databasePrivateKey = dpk === -1 ? botConfig.databasePrivateKey : process.argv[dpk + 1];
+const iat = process.argv.indexOf("-iat");
+botConfig.databasePrivateKey = iat === -1 ? botConfig.databasePrivateKey : process.argv[iat + 1];
+
 
 //run
 const Bot = require("./out/bot");

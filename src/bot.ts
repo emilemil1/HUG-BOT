@@ -40,7 +40,9 @@ export class Bot {
 			getConfigs: this.getConfigs.bind(this),
 			getRoles: this.getRoles.bind(this),
 			markForUpdate: this.markForUpdate.bind(this),
-			sudo: this.sudo.bind(this)
+			sudo: this.sudo.bind(this),
+			getRolePluginCounts: this.getRolePluginCounts.bind(this),
+			getBotConfig: this.getImgurAccessToken.bind(this)
 		});
 		this.connect();
 	}
@@ -83,6 +85,10 @@ export class Bot {
 		new Bot(this.botConfig);
 	}
 
+	private getRolePluginCounts(guildID: GuildID) {
+		return this.guilds[guildID].RPInstances;
+	}
+
 	private getConfigs(guildID: GuildID) {
 		return this.guilds[guildID].plugins;
 	}
@@ -102,6 +108,10 @@ export class Bot {
 			parts[0] = parts[0].substring(1);
 			this.processCommand(message, parts);
 		}
+	}
+
+	private getImgurAccessToken() {
+		return this.botConfig;
 	}
 
 	private processCommand(message: Message, parts: string[]) {
@@ -136,7 +146,6 @@ export class Bot {
 	}
 
 	private verifyRole(input: Input) {
-		console.log(this.guilds[input.guild.id])
 		if (!this.guilds[input.guild.id].RPInstances[input.plugin.id]) {
 			if (!input.plugin.extendedPermissions) {
 				return true;

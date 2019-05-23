@@ -30,11 +30,19 @@ export class PluginTools {
 		return this.functions.getRoles(guildID);
 	}
 
+	getRolePluginCounts(guildID: GuildID) {
+		return this.functions.getRolePluginCounts(guildID);
+	}
+
 	markForUpdate(guildID: GuildID) {
 		this.functions.markForUpdate(guildID);
 	}
 
 	sudo(input: Input) {
 		this.functions.sudo(input);
+	}
+
+	getBotConfig() {
+		return this.functions.getBotConfig();
 	}
 }
