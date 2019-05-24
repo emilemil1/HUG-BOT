@@ -8,9 +8,14 @@ class MTG {
 	constructor(builder: PluginBuilder) {
 		builder.name = "Magic: The Gathering";
 		builder.commands = ["mtg", "magic"];
-		builder.handler = this.process.bind(this);
+		builder.messageHandler = this.process.bind(this);
+		builder.helpHandler = this.help.bind(this);
 		builder.extendedPermissions = false;
 		this.tools = builder.register();
+	}
+
+	help(input: Input) {
+		input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
 	}
 
 	process(input: Input) {

@@ -4,10 +4,14 @@ class SuperAdmin {
     constructor(builder) {
         builder.name = "Super Admin";
         builder.commands = ["sudo"];
-        builder.handler = this.process.bind(this);
+        builder.messageHandler = this.process.bind(this);
+        builder.helpHandler = this.help.bind(this);
         builder.extendedPermissions = true;
         builder.alwaysOn = true;
         this.tools = builder.register();
+    }
+    help(input) {
+        input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
     }
     process(input) {
         if (input.message.author.id !== "170898083532505088") {

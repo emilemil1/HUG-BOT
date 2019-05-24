@@ -25,14 +25,27 @@ class PluginManager {
         return this.commandMap;
     }
     registerPlugin(pluginBuilder) {
-        if (!pluginBuilder.name || !pluginBuilder.commands || pluginBuilder.commands.length === 0 || !pluginBuilder.handler) {
-            console.log("Failed to initialize plugin without a name, ID or handler.");
+        if (!pluginBuilder.name) {
+            console.log("Failed to initialize plugin without a name.");
+            return;
+        }
+        if (!pluginBuilder.commands || pluginBuilder.commands.length === 0) {
+            console.log("Failed to initialize plugin without a command: " + pluginBuilder.name);
+            return;
+        }
+        if (!pluginBuilder.messageHandler) {
+            console.log("Failed to initialize plugin without a message handler: " + pluginBuilder.name);
+            return;
+        }
+        if (!pluginBuilder.helpHandler) {
+            console.log("Failed to initialize plugin without a help handler: " + pluginBuilder.name);
             return;
         }
         const plugin = {
             name: pluginBuilder.name,
             id: pluginBuilder.commands[0],
-            handler: pluginBuilder.handler,
+            messageHandler: pluginBuilder.messageHandler,
+            helpHandler: pluginBuilder.helpHandler,
             commands: pluginBuilder.commands,
             passive: pluginBuilder.passive,
             defaultConfig: pluginBuilder.defaultConfig,

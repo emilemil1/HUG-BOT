@@ -5,9 +5,13 @@ class MTG {
     constructor(builder) {
         builder.name = "Magic: The Gathering";
         builder.commands = ["mtg", "magic"];
-        builder.handler = this.process.bind(this);
+        builder.messageHandler = this.process.bind(this);
+        builder.helpHandler = this.help.bind(this);
         builder.extendedPermissions = false;
         this.tools = builder.register();
+    }
+    help(input) {
+        input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
     }
     process(input) {
         if (input.parts.length === 1) {

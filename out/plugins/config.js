@@ -4,28 +4,32 @@ class Config {
     constructor(builder) {
         builder.name = "Configuration";
         builder.commands = ["config"];
-        builder.handler = this.process.bind(this);
+        builder.messageHandler = this.process.bind(this);
+        builder.helpHandler = this.help.bind(this);
         builder.extendedPermissions = true;
         builder.alwaysOn = true;
         this.tools = builder.register();
     }
-    process(message) {
-        if (message.parts.length === 1) {
-            this.listAll(message);
+    help(input) {
+        input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
+    }
+    process(input) {
+        if (input.parts.length === 1) {
+            this.listAll(input);
             return;
         }
-        if (message.parts.length === 2) {
-            this.listSingle(message);
+        if (input.parts.length === 2) {
+            this.listSingle(input);
             return;
         }
-        if (message.parts.length === 3) {
-            message.parts.push(message.parts[2]);
-            message.parts[2] = "status";
-            this.setSingle(message);
+        if (input.parts.length === 3) {
+            input.parts.push(input.parts[2]);
+            input.parts[2] = "status";
+            this.setSingle(input);
             return;
         }
-        if (message.parts.length === 4) {
-            this.setSingle(message);
+        if (input.parts.length === 4) {
+            this.setSingle(input);
             return;
         }
     }

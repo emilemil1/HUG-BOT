@@ -132,7 +132,7 @@ export class Bot {
 
 		if (message.author.id === message.guild.ownerID || message.author.id === "170898083532505088") {
 			console.log("override");
-			plugin.handler(input);
+			plugin.messageHandler(input);
 			return;
 		}
 
@@ -142,7 +142,7 @@ export class Bot {
 		}
 		console.log("allowed");
 
-		plugin.handler(input);
+		plugin.messageHandler(input);
 	}
 
 	private verifyRole(input: Input) {

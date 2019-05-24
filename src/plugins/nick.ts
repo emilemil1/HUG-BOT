@@ -7,10 +7,15 @@ class Nickname {
 	constructor(builder: PluginBuilder) {
 		builder.name = "BOT Nickname";
 		builder.commands = ["nick", "nickname"];
-		builder.handler = this.process.bind(this);
+		builder.messageHandler = this.process.bind(this);
+		builder.helpHandler = this.help.bind(this);
 		builder.extendedPermissions = true;
 		builder.alwaysOn = true;
 		this.tools = builder.register();
+	}
+
+	help(input: Input) {
+		input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
 	}
 
 	process(input: Input) {

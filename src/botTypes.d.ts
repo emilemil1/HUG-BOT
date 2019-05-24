@@ -49,7 +49,8 @@ declare global {
 	interface BotPlugin {
 		name: string
 		id: PluginID
-		handler: CommandHandler
+		messageHandler: CommandHandler
+		helpHandler: CommandHandler
 		commands: string[]
 		passive: boolean
 		defaultConfig: DefaultPluginConfig

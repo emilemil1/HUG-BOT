@@ -7,12 +7,17 @@ class Role {
 	constructor(builder: PluginBuilder) {
 		builder.name = "Role Permissions";
 		builder.commands = ["role", "roles"];
-		builder.handler = this.process.bind(this);
+		builder.messageHandler = this.process.bind(this);
+		builder.helpHandler = this.help.bind(this);
 		builder.extendedPermissions = true;
 		builder.alwaysOn = true;
 		this.tools = builder.register();
 
 		//TODO - handle role events
+	}
+
+	help(input: Input) {
+		input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
 	}
 
 	process(input: Input) {
@@ -72,7 +77,7 @@ class Role {
 			const plugin = this.tools.plugins.get(pluginID)!;
 			reply += `**${plugin.name}** (.${plugin.commands.join(" .")})\n`;
 		}
-		input.channel.send(this.tools.embed.addField(`Role Permissions - ${role.name}`, reply === "" ? "None" : reply));
+		input.channel.send(this.tools.embed.addField(`Role Permissions: ${role.name}`, reply === "" ? "None" : reply));
 	}
 
 	listSinglePlugin(input: Input) {
@@ -83,9 +88,9 @@ class Role {
 		}
 		if (!this.tools.getRolePluginCounts(input.guild.id)[plugin]) {
 			if (plug.extendedPermissions) {
-				input.channel.send(this.tools.embed.addField(`Role Permissions - ${plug.name}`, "Available to server owner."));
+				input.channel.send(this.tools.embed.addField(`Role Permissions: ${plug.name}`, "Available to server owner."));
 			} else {
-				input.channel.send(this.tools.embed.addField(`Role Permissions - ${plug.name}`, "Available to all users."));
+				input.channel.send(this.tools.embed.addField(`Role Permissions: ${plug.name}`, "Available to all users."));
 			}
 			return;
 		}
@@ -98,6 +103,7 @@ class Role {
 			}
 			reply += `${role[0]}\n`;
 		}
+		input.channel.send(this.tools.embed.addField(`Role Permissions: ${plug.name}`, reply));
 	}
 
 	remove(input: Input) {

@@ -109,7 +109,7 @@ class Bot {
         };
         if (message.author.id === message.guild.ownerID || message.author.id === "170898083532505088") {
             console.log("override");
-            plugin.handler(input);
+            plugin.messageHandler(input);
             return;
         }
         if (input.config.status === "false" || !this.verifyRole(input)) {
@@ -117,7 +117,7 @@ class Bot {
             return;
         }
         console.log("allowed");
-        plugin.handler(input);
+        plugin.messageHandler(input);
     }
     verifyRole(input) {
         if (!this.guilds[input.guild.id].RPInstances[input.plugin.id]) {

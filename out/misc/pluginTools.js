@@ -15,6 +15,9 @@ class PluginTools {
     get plugins() {
         return this.functions.plugins;
     }
+    get commands() {
+        return this.functions.commands;
+    }
     get client() {
         return this.functions.client;
     }
