@@ -83,21 +83,30 @@ class Bot {
         this.guilds[guildID].update = true;
     }
     getMessage(message) {
+        if (message.channel.type !== "text" || message.author.bot) {
+            return;
+        }
         const parts = message.content.split(" ");
         if (parts[0].charAt(0) === "." && message.content.length !== 1) {
             message.content = message.content.substring(1);
             parts[0] = parts[0].substring(1);
             this.processCommand(message, parts);
         }
+        else {
+            for (const plugin of this.pluginManager.passive) {
+                plugin.passiveHandler(message);
+            }
+        }
     }
     getImgurAccessToken() {
         return this.botConfig;
     }
     processCommand(message, parts) {
-        const plugin = this.pluginManager.plugins.get(parts[0]);
+        const plugin = this.pluginManager.commands.get(parts[0]);
         if (!plugin) {
             return;
         }
+        const conf = this.getConfigs(message.guild.id)[plugin.id];
         const input = {
             content: message.content,
             parts: message.content.split(" "),
@@ -105,18 +114,19 @@ class Bot {
             channel: message.channel,
             message: message,
             plugin: plugin,
-            config: this.getConfigs(message.guild.id)[plugin.id]
+            config: conf ? conf.config : undefined,
+            data: conf ? conf.data : undefined
         };
         if (message.author.id === message.guild.ownerID || message.author.id === "170898083532505088") {
-            console.log("override");
             plugin.messageHandler(input);
             return;
         }
-        if (input.config.status === "false" || !this.verifyRole(input)) {
-            console.log("rejected");
+        if (!plugin.alwaysOn && input.config.status === "false") {
             return;
         }
-        console.log("allowed");
+        if (!this.verifyRole(input)) {
+            return;
+        }
         plugin.messageHandler(input);
     }
     verifyRole(input) {

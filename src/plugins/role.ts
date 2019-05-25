@@ -13,7 +13,9 @@ class Role {
 		builder.alwaysOn = true;
 		this.tools = builder.register();
 
-		//TODO - handle role events
+		//TODO - sync roles on startup
+		//TODO - handle roles deleted 
+		//TODO - handle roles added
 	}
 
 	help(input: Input) {

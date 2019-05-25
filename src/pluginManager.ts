@@ -4,6 +4,7 @@ import { PluginTools } from "./misc/pluginTools";
 export default class PluginManager {
 	private pluginsMap = new Map<PluginID, BotPlugin>();
 	private commandMap = new Map<Command, BotPlugin>();
+	private passiveSet = new Set<BotPlugin>();
 	private exposedFunctions: PluginManagerExposedFunctions;
 
 	constructor(exposedFunctions: BotExposedFunctions_Plugin) {
@@ -28,6 +29,10 @@ export default class PluginManager {
 		return this.commandMap;
 	}
 
+	get passive() {
+		return this.passiveSet;
+	}
+
 	private registerPlugin(pluginBuilder: PluginBuilder): PluginTools|undefined {
 		if (!pluginBuilder.name) {
 			console.log("Failed to initialize plugin without a name.");
@@ -50,14 +55,35 @@ export default class PluginManager {
 			id: pluginBuilder.commands[0],
 			messageHandler: pluginBuilder.messageHandler,
 			helpHandler: pluginBuilder.helpHandler,
+			passiveHandler: pluginBuilder.passiveHandler,
+			catchupHandler: pluginBuilder.catchupHandler,
 			commands: pluginBuilder.commands,
-			passive: pluginBuilder.passive,
-			defaultConfig: pluginBuilder.defaultConfig,
-			configCount: Object.keys(pluginBuilder.defaultConfig).length,
-			validator: pluginBuilder.validator,
+			config: pluginBuilder.config,
+			data: pluginBuilder.data,
 			extendedPermissions: pluginBuilder.extendedPermissions,
 			alwaysOn: pluginBuilder.alwaysOn
 		}
+		if (!plugin.alwaysOn) {
+			if (plugin.config === undefined) {
+				plugin.config = {}
+			}
+			plugin.config.status = "false";
+		}
+		if (plugin.config === undefined) {
+			delete plugin.config;
+		}
+		if (plugin.data === undefined) {
+			delete plugin.data;
+		}
+		if (plugin.catchupHandler === undefined) {
+			delete plugin.catchupHandler;
+		}
+		if (plugin.passiveHandler === undefined) {
+			delete plugin.passiveHandler;
+		} else {
+			this.passiveSet.add(plugin);
+		}
+		
 		for (const command of plugin.commands) {
 			this.commandMap.set(command, plugin);
 		}
@@ -71,10 +97,11 @@ export class PluginBuilder {
 	name?: string;
 	messageHandler?: CommandHandler;
 	helpHandler?: CommandHandler;
+	passiveHandler?: PassiveHandler
+	catchupHandler?: () => void
 	commands?: string[];
-	passive: boolean = false;
-	defaultConfig: DefaultPluginConfig = {};
-	validator: ConfigValidator = () => false;
+	config?: {[index: string]: string};
+	data?: {[index: string]: PluginConfigOption};
 	extendedPermissions: boolean = false;
 	alwaysOn: boolean = false;
 

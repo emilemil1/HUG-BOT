@@ -6,6 +6,7 @@ class PluginManager {
     constructor(exposedFunctions) {
         this.pluginsMap = new Map();
         this.commandMap = new Map();
+        this.passiveSet = new Set();
         this.exposedFunctions = {
             ...exposedFunctions,
             plugins: this.plugins,
@@ -23,6 +24,9 @@ class PluginManager {
     }
     get commands() {
         return this.commandMap;
+    }
+    get passive() {
+        return this.passiveSet;
     }
     registerPlugin(pluginBuilder) {
         if (!pluginBuilder.name) {
@@ -46,14 +50,35 @@ class PluginManager {
             id: pluginBuilder.commands[0],
             messageHandler: pluginBuilder.messageHandler,
             helpHandler: pluginBuilder.helpHandler,
+            passiveHandler: pluginBuilder.passiveHandler,
+            catchupHandler: pluginBuilder.catchupHandler,
             commands: pluginBuilder.commands,
-            passive: pluginBuilder.passive,
-            defaultConfig: pluginBuilder.defaultConfig,
-            configCount: Object.keys(pluginBuilder.defaultConfig).length,
-            validator: pluginBuilder.validator,
+            config: pluginBuilder.config,
+            data: pluginBuilder.data,
             extendedPermissions: pluginBuilder.extendedPermissions,
             alwaysOn: pluginBuilder.alwaysOn
         };
+        if (!plugin.alwaysOn) {
+            if (plugin.config === undefined) {
+                plugin.config = {};
+            }
+            plugin.config.status = "false";
+        }
+        if (plugin.config === undefined) {
+            delete plugin.config;
+        }
+        if (plugin.data === undefined) {
+            delete plugin.data;
+        }
+        if (plugin.catchupHandler === undefined) {
+            delete plugin.catchupHandler;
+        }
+        if (plugin.passiveHandler === undefined) {
+            delete plugin.passiveHandler;
+        }
+        else {
+            this.passiveSet.add(plugin);
+        }
         for (const command of plugin.commands) {
             this.commandMap.set(command, plugin);
         }
@@ -64,9 +89,6 @@ class PluginManager {
 exports.default = PluginManager;
 class PluginBuilder {
     constructor(registerFunc) {
-        this.passive = false;
-        this.defaultConfig = {};
-        this.validator = () => false;
         this.extendedPermissions = false;
         this.alwaysOn = false;
         this.registerFunc = registerFunc;

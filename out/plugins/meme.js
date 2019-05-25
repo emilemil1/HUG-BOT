@@ -18,7 +18,7 @@ class Meme {
             return;
         }
         let memeString = input.content.substring(input.parts[0].length + 1);
-        let url = "https://api.imgur.com/3/gallery/search/top?q=" + memeString;
+        let url = "https://api.imgur.com/3/gallery/search/viral?perPage=100&q_tags=funny,meme,memes&q_all=" + memeString;
         const requestOptions = {
             url: url,
             headers: {

@@ -105,39 +105,86 @@ class DatabaseSync {
             //Iterate over loaded plugins
             for (const plugin of plugins.values()) {
                 //Create plugins missing from local
+                if (!plugin.config && !plugin.data) {
+                    continue;
+                }
                 if (!guild.local.plugins[plugin.id]) {
                     guild.local.plugins[plugin.id] = {};
-                    for (const def in plugin.defaultConfig) {
-                        guild.local.plugins[plugin.id][def] = plugin.defaultConfig[def].value;
-                    }
-                    if (!plugin.alwaysOn) {
-                        guild.local.plugins[plugin.id].status = "false";
-                    }
-                    guild.local.update = true;
+                }
+                if (plugin.config) {
+                    guild.local.plugins[plugin.id].config = DatabaseSync.replicate(guild.local.plugins[plugin.id].config, plugin.config, guild.local, plugin.id + ".config");
+                }
+                else {
+                    delete guild.local.plugins[plugin.id].config;
+                }
+                if (plugin.data) {
+                    guild.local.plugins[plugin.id].data = DatabaseSync.replicate(guild.local.plugins[plugin.id].data, plugin.data, guild.local, plugin.id + ".data");
+                }
+                else {
+                    delete guild.local.plugins[plugin.id].data;
                 }
             }
         }
     }
     static createNewGuild(plugins) {
         return {
-            plugins: this.getPluginDefaults(plugins),
+            plugins: {},
             roles: {},
             RPInstances: {},
             update: true
         };
     }
-    static getPluginDefaults(plugins) {
-        const newPlugins = {};
-        for (const plugin of plugins.values()) {
-            newPlugins[plugin.id] = {};
-            for (const def in plugin.defaultConfig) {
-                newPlugins[plugin.id][def] = plugin.defaultConfig[def].value;
+    static replicate(destination, source, guild, path) {
+        //Undefined
+        if (source === undefined) {
+            if (destination === undefined) {
+                return undefined;
             }
-            if (!plugin.alwaysOn) {
-                newPlugins[plugin.id].status = "false";
-            }
+            return destination;
         }
-        return newPlugins;
+        //Primitives
+        if (source === null || typeof source !== "object") {
+            if (destination === undefined || typeof destination !== typeof source) {
+                guild.update = true;
+                return source;
+            }
+            return destination;
+        }
+        //Objects
+        if (!Array.isArray(source)) {
+            if (typeof destination !== "object" || Array.isArray(destination)) {
+                guild.update = true;
+            }
+            else {
+                for (const destProp in destination) {
+                    if (source[destProp] === undefined) {
+                        guild.update = true;
+                        break;
+                    }
+                }
+            }
+            let counter = 0;
+            const newProp = {};
+            for (const sourceProp in source) {
+                counter++;
+                newProp[sourceProp] = DatabaseSync.replicate(destination ? destination[sourceProp] : undefined, source[sourceProp], guild, path + "." + sourceProp);
+            }
+            if (counter === 0 && destination) {
+                for (const destProp in destination) {
+                    newProp[destProp] = destination[destProp];
+                }
+            }
+            return newProp;
+        }
+        //Arrays
+        if (!Array.isArray(destination) || source.length !== destination.length) {
+            guild.update = true;
+        }
+        const newArr = [];
+        for (let i = 0; i < source.length; i++) {
+            newArr.push(DatabaseSync.replicate(destination ? destination[i] : undefined, source[i], guild, path + "[" + i + "]"));
+        }
+        return newArr;
     }
 }
 exports.DatabaseSync = DatabaseSync;

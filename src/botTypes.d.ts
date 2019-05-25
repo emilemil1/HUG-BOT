@@ -6,6 +6,7 @@ declare global {
 	type PluginID = string;
 	type GuildID = string;
 	type CommandHandler = (input: Input) => void
+	type PassiveHandler = (message: Message) => void
 	type ConfigValidator = (prop: string, value: PluginConfigOption) => boolean
 	
 	interface BotConfig {
@@ -16,12 +17,13 @@ declare global {
 		imgurAccessToken: string
 	}
 
-	type PluginConfigOption = string|Array<string>;
+	type PluginConfigOption = null|string|string[]|{[index:string]: null|string|string[]};
 
 	interface PluginConfig {
-		[index: string]: PluginConfigOption
+		config?: {[index: string]: string}
+		data?: {[index: string]: PluginConfigOption}
 	}
-	
+
 	interface Plugins {
 		[index: string]: PluginConfig
 	}
@@ -51,12 +53,12 @@ declare global {
 		id: PluginID
 		messageHandler: CommandHandler
 		helpHandler: CommandHandler
+		passiveHandler?: PassiveHandler
+		catchupHandler?: () => void
 		commands: string[]
-		passive: boolean
-		defaultConfig: DefaultPluginConfig
-		configCount: number
+		config?: {[index: string]: string}
+		data?: {[index: string]: PluginConfigOption}
 		alwaysOn: boolean
-		validator: ConfigValidator
 		extendedPermissions: boolean
 	}
 
@@ -67,7 +69,8 @@ declare global {
 		channel: TextChannel | DMChannel | GroupDMChannel
 		message: Message
 		plugin: BotPlugin
-		config: PluginConfig
+		config?: {[index: string]: string}
+		data?: {[index: string]: PluginConfigOption}
 	}
 
 	interface Roles {
@@ -87,10 +90,6 @@ declare global {
 	interface PluginManagerExposedFunctions extends BotExposedFunctions_Plugin {
 		plugins: Map<PluginID, BotPlugin>
 		commands: Map<Command, BotPlugin>
-	}
-
-	interface DefaultPluginConfig {
-		[index: string]: {type: string, value: string}
 	}
 }
 

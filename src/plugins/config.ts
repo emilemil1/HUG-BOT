@@ -20,7 +20,7 @@ class Config {
 
 	process(input: Input) {
 		if (input.parts.length === 1) {
-			this.listAll(input);
+			this.help(input);
 			return;
 		}
 
@@ -47,28 +47,21 @@ class Config {
 		if (!plugin) {
 			return;
 		}
-		const config = this.tools.getConfigs(input.guild.id)[plugin.id];
-		if (!config[input.parts[2]]) {
+		const pluginConfig = this.tools.getConfigs(input.guild.id)[plugin.id];
+		if (!pluginConfig) {
+			return;
+		}
+		const config = pluginConfig.config;
+		if (!config || !config[input.parts[2]]) {
 			return;
 		}
 
-		const newValue = Config.import(input.parts[3])
-		if (newValue === config[input.parts[2]]) {
+		const newValue = Config.import(input.parts[3], config[input.parts[2]])
+		if (newValue === undefined) {
+			input.channel.send(this.tools.embed.addField(plugin.name, `**${input.parts[2].charAt(0).toUpperCase()}${input.parts[2].substring(1)}** cannot be set to '${input.parts[3]}'`));
 			return;
 		}
-		if (input.parts[2] === "status") {
-			if (!Config.statusValidator(newValue)) {
-				input.channel.send(this.tools.embed.addField(plugin.name, `**${plugin.name}** cannot be set to '${input.parts[3]}'`));
-				return;
-			}
-			input.channel.send(this.tools.embed.addField(plugin.name, `**${plugin.name}** has ${Config.export(newValue).has}`));
-		} else {
-			if (!plugin.validator(input.parts[2], newValue)) {
-				input.channel.send(this.tools.embed.addField(plugin.name, `**${input.parts[2].charAt(0).toUpperCase()}${input.parts[2].substring(1)}** cannot be set to '${input.parts[3]}'`));
-				return;
-			}
-			input.channel.send(this.tools.embed.addField(plugin.name, `**${input.parts[2].charAt(0).toUpperCase()}${input.parts[2].substring(1)}** has ${Config.export(newValue).has}`));
-		}
+		input.channel.send(this.tools.embed.addField(plugin.name, `**${input.parts[2].charAt(0).toUpperCase()}${input.parts[2].substring(1)}** has ${Config.export(newValue).has}`));
 
 		config[input.parts[2]] = newValue;
 		this.tools.markForUpdate(input.guild.id);
@@ -81,29 +74,19 @@ class Config {
 		if (!plugin) {
 			return;
 		}
-		if (plugin.alwaysOn && plugin.configCount === 0) {
+		const pluginConfig = this.tools.getConfigs(input.guild.id)[plugin.id];
+		if (!pluginConfig) {
 			return;
 		}
-
-		const config = this.tools.getConfigs(input.guild.id)[plugin.id];
+		const config = pluginConfig.config;
+		if (!config) {
+			return;
+		}
 		let reply = "";
 		for (const option of Object.entries(config)) {
 			reply += `**${option[0].charAt(0).toUpperCase()}${option[0].substring(1)}** : ${Config.export(option[1]).text}`
 		}
 		input.channel.send(this.tools.embed.addField(plugin.name, reply));
-	}
-
-	listAll(input: Input) {
-		let reply = "";
-
-		//TODO - Show plugins with extended permission first and separately
-		//TODO - Add instructions
-		//TODO - Sort
-		for (const plugin of Array.from(this.tools.plugins.values()).filter(p => !p.alwaysOn || p.configCount > 0).sort()) {
-			reply += `**${plugin.name}** (.${plugin.commands.join(" .")})\n`;
-		}
-
-		input.channel.send(this.tools.embed.addField("Configuration", reply));
 	}
 
 	static export(value: PluginConfigOption) {
@@ -128,25 +111,41 @@ class Config {
 		};
 	}
 
-	static import(value: PluginConfigOption) {
-		switch(value) {
-		case "on":
-		case "enable":
-		case "enabled":
-			return "true"
-		case "off":
-		case "disable":
-		case "disable":
-			return "false"
+	static import(value: string, oldValue: PluginConfigOption) {
+		if (value === oldValue) {
+			return undefined;
+		}
+
+		if (oldValue === "true" || oldValue === "false") {
+			return Config.importBoolean(value);
+		}
+		if (Number(oldValue) != NaN) {
+			return Config.importNumber(value);
 		}
 		return value;
+
+		
 	}
 
-	static statusValidator(value: PluginConfigOption) {
-		if (value === "true" || value === "false") {
-			return true;
+	static importBoolean(value: string) {
+		switch(value) {
+			case "on":
+			case "enable":
+			case "enabled":
+				return "true"
+			case "off":
+			case "disable":
+			case "disable":
+				return "false"
+			}
+			return undefined;
+	}
+
+	static importNumber(value: string) {
+		if (Number(value) === NaN) {
+			return undefined;
 		}
-		return false;
+		return Number(value).toString();
 	}
 }
 

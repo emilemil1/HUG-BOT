@@ -28,7 +28,7 @@ export default class FirestoreProxy implements DatabaseProxy {
 				writeBatch.delete(this.firestore.doc("servers/"+guildConfig[0]));
 				del.push(guildConfig[0]);
 			} else {
-				writeBatch.set(this.firestore.doc("servers/"+guildConfig[0]), guildConfig[1], {merge: true});
+				writeBatch.set(this.firestore.doc("servers/"+guildConfig[0]), guildConfig[1]);
 			}
 		}
 		for (const id of del) {
