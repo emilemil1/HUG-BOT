@@ -109,6 +109,7 @@ export class DatabaseSync {
 			for (const plugin of plugins.values()) {
 				//Create plugins missing from local
 				if (!plugin.config && !plugin.data) {
+					delete guild.local.plugins[plugin.id];
 					continue;
 				}
 				if (!guild.local.plugins[plugin.id]) {
