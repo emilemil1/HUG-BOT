@@ -106,7 +106,10 @@ class DatabaseSync {
             for (const plugin of plugins.values()) {
                 //Create plugins missing from local
                 if (!plugin.config && !plugin.data) {
-                    delete guild.local.plugins[plugin.id];
+                    if (guild.local.plugins[plugin.id]) {
+                        delete guild.local.plugins[plugin.id];
+                        guild.local.update = true;
+                    }
                     continue;
                 }
                 if (!guild.local.plugins[plugin.id]) {
@@ -115,14 +118,16 @@ class DatabaseSync {
                 if (plugin.config) {
                     guild.local.plugins[plugin.id].config = DatabaseSync.replicate(guild.local.plugins[plugin.id].config, plugin.config, guild.local, plugin.id + ".config");
                 }
-                else {
+                else if (guild.local.plugins[plugin.id].config) {
                     delete guild.local.plugins[plugin.id].config;
+                    guild.local.update = true;
                 }
                 if (plugin.data) {
                     guild.local.plugins[plugin.id].data = DatabaseSync.replicate(guild.local.plugins[plugin.id].data, plugin.data, guild.local, plugin.id + ".data");
                 }
-                else {
+                else if (guild.local.plugins[plugin.id].data) {
                     delete guild.local.plugins[plugin.id].data;
+                    guild.local.update = true;
                 }
             }
         }
