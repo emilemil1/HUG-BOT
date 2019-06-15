@@ -13,6 +13,7 @@ class Translate {
 	private translator: GoogleCloudProxy;
 
 	constructor(builder: PluginBuilder) {
+		return;
 		this.cache = new Map();
 
 		builder.name = "Translate";
