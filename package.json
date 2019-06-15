@@ -8,6 +8,7 @@
     "url": "https://github.com/emilemil1/HUG-BOT.git"
   },
   "dependencies": {
+    "@google-cloud/translate": "^4.0.1",
     "discord.js": "^11.4.2",
     "firebase-admin": "^7.3.0",
     "request": "^2.88.0"

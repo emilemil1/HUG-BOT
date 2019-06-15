@@ -7,7 +7,7 @@ class MTG {
 
 	constructor(builder: PluginBuilder) {
 		builder.name = "Magic: The Gathering";
-		builder.commands = ["mtg", "magic"];
+		builder.commands = ["mtg"];
 		builder.messageHandler = this.process.bind(this);
 		builder.helpHandler = this.help.bind(this);
 		builder.extendedPermissions = false;
@@ -15,7 +15,15 @@ class MTG {
 	}
 
 	help(input: Input) {
-		input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
+		const description = `
+		Search for a MTG card.
+		⠀
+		`
+		const usage = `
+		\`\`\`.mtg [card] ([set])\`\`\`
+		`
+
+		input.channel.send(this.tools.embed.addField("Help", description).addField("Usage", usage));
 	}
 
 	process(input: Input) {

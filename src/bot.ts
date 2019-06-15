@@ -1,7 +1,7 @@
 import { Client as DiscordClient, Message, RichEmbed } from "discord.js";
-import FirestoreProxy from "./databaseProxy/firestoreProxy";
+import FirestoreProxy from "./externals/firestoreProxy";
 import PluginManager from "./pluginManager";
-import { DatabaseSync } from "./databaseProxy/dbSync";
+import { DatabaseSync } from "./externals/dbSync";
 
 export class Bot {
 	private client = new DiscordClient();
@@ -34,6 +34,16 @@ export class Bot {
 		}
 
 		this.client.on("message", this.getMessage.bind(this))
+		this.client.on("guildCreate", (guild) => {
+			if (!this.guilds[guild.id]) {
+				this.guilds[guild.id] = DatabaseSync.createNewGuild(this.pluginManager.plugins)
+				DatabaseSync.syncGuild({
+					local: this.guilds[guild.id],
+					remote: guild
+				}, this.pluginManager.plugins);
+			}
+		})
+
 		console.log("Reading plugins...");
 		this.pluginManager = new PluginManager({
 			client: this.client,
@@ -60,6 +70,7 @@ export class Bot {
 		})
 		console.log("Syncing database...");
 		DatabaseSync.syncDatabase(this.client.guilds, this.guilds, this.pluginManager.plugins);
+		this.client.emit("sync");
 
 		this.database.ready = true;
 		console.log("Connected!");
@@ -77,6 +88,13 @@ export class Bot {
 				this.database.write(this.guilds)
 					.then(this.database.disconnect())
 			);
+		}
+
+		for (const plugin of this.pluginManager.plugins.values()) {
+			if (!plugin.tearDown) {
+				continue;
+			}
+			promises.push(plugin.tearDown());
 		}
 
 		await Promise.all(promises);

@@ -24,14 +24,14 @@ class Help {
 
 	help(input: Input) {
 		const description = `
-		This module displays help information about other modules.
+		Displays help information about other modules.
 		To see a list of available modules, use '.commands'.
 		⠀
 		`
 		const usage = `
-		\`\`\`.help [command] [function]\`\`\`
+		\`\`\`.help [command]\`\`\`
 		`
-		input.channel.send(this.tools.embed.addField("Help", description).addField("Usage", usage))
+		input.channel.send(this.tools.embed.addField("Help", description).addField("Usage", usage));
 	}
 
 	helpPlugin(input: Input) {

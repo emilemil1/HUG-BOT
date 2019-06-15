@@ -15,7 +15,7 @@ class SuperAdmin {
 	}
 
 	help(input: Input) {
-		input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
+		input.channel.send(this.tools.embed.addField("Super Admin", "This is not for you."));
 	}
 
 	process(input: Input) {

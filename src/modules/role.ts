@@ -6,7 +6,7 @@ class Role {
 
 	constructor(builder: PluginBuilder) {
 		builder.name = "Role Permissions";
-		builder.commands = ["role", "roles"];
+		builder.commands = ["role"];
 		builder.messageHandler = this.process.bind(this);
 		builder.helpHandler = this.help.bind(this);
 		builder.extendedPermissions = true;
@@ -19,7 +19,24 @@ class Role {
 	}
 
 	help(input: Input) {
-		input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
+		const description = `
+		Make modules exclusive to certain roles.
+		Unassigned modules are either available to everyone, or only to the channel owner.
+		⠀
+		`
+		const showAll = `
+		\`\`\`.role\`\`\`
+		`
+
+		const showOne = `
+		\`\`\`.role [role/module]\`\`\`
+		`
+
+		const toggle = `
+		\`\`\`.role [role] [add/remove] [command]\`\`\`
+		`
+
+		input.channel.send(this.tools.embed.addField("Role Permissions", description).addField("Show All Roles", showAll).addField("Show One Role/Module", showOne).addField("Add/Remove Role Permissions", toggle));
 	}
 
 	process(input: Input) {
@@ -100,10 +117,10 @@ class Role {
 		let reply = "";
 
 		for (const role of Object.entries(roles)) {
-			if (!role[1][plugin]) {
+			if (role[1][plugin] === undefined) {
 				continue;
 			}
-			reply += `${role[0]}\n`;
+			reply += `${input.guild.roles.get(role[0])!.name}\n`;
 		}
 		input.channel.send(this.tools.embed.addField(`Role Permissions: ${plug.name}`, reply));
 	}
@@ -125,7 +142,7 @@ class Role {
 		}
 		this.tools.markForUpdate(input.guild.id);
 
-		input.channel.send(this.tools.embed.addField("Roles", `Revoking role **${ext.role.name}** access to plugin **${ext.plugin.name}**`));
+		input.channel.send(this.tools.embed.addField("Roles", `Revoking role **${ext.role.name}** access to module **${ext.plugin.name}**`));
 	}
 
 	add(input: Input) {
@@ -133,7 +150,7 @@ class Role {
 		if (!ext) {
 			return;
 		}
-		if (ext.roles[ext.plugin.id] === undefined) {
+		if (ext.roles[ext.plugin.id] !== undefined) {
 			return;
 		}
 
@@ -145,7 +162,7 @@ class Role {
 		instances[ext.plugin.id]!++
 		this.tools.markForUpdate(input.guild.id);
 
-		input.channel.send(this.tools.embed.addField("Roles", `Giving role **${ext.role.name}** access to plugin **${ext.plugin.name}**`));
+		input.channel.send(this.tools.embed.addField("Roles", `Giving role **${ext.role.name}** access to module **${ext.plugin.name}**`));
 	}
 
 	private extract(input: Input) {

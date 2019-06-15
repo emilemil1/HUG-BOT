@@ -13,9 +13,11 @@ if (process.env.discordToken) {
 if (process.env.databasePrivateKey) {
 	botConfig.databasePrivateKey = process.env.databasePrivateKey;
 }
-
 if (process.env.imgurAccessToken) {
 	botConfig.imgurAccessToken = process.env.imgurAccessToken;
+}
+if (process.env.googleCloudKey) {
+	botConfig.googleCloudKey = process.env.googleCloudKey;
 }
 
 if (fs.existsSync("botsecrets.json")) {
@@ -32,6 +34,8 @@ const dpk = process.argv.indexOf("-dpk");
 botConfig.databasePrivateKey = dpk === -1 ? botConfig.databasePrivateKey : process.argv[dpk + 1];
 const iat = process.argv.indexOf("-iat");
 botConfig.databasePrivateKey = iat === -1 ? botConfig.databasePrivateKey : process.argv[iat + 1];
+const gck = process.argv.indexOf("-gck");
+botConfig.googleCloudKey = gck === -1 ? botConfig.googleCloudKey : process.argv[gck + 1];
 
 
 //run

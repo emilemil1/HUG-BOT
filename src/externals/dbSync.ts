@@ -10,6 +10,8 @@ export class DatabaseSync {
 			//Collect guilds missing from remote
 			if (!remoteGuilds.has(localGuildID)) {
 				expire.push(localGuildID);
+			} else {
+				delete localGuilds[localGuildID].expire;
 			}
 		}
 		//Expire guilds missing from remote
@@ -40,61 +42,22 @@ export class DatabaseSync {
 
 		//Iterate over active guilds
 		for (const guild of active) {
-			//Iterate over remote roles
-			for (const remoteRole of guild.remote.roles.keys()) {
-				//Create roles missing from local
-				if (!guild.local.roles[remoteRole]) {
-					guild.local.roles[remoteRole] = {};
-					guild.local.update = true;
-					continue;
-				}
-				const removePlugins = [];
-				//Iterate over plugins in local role
-				for (const pluginID in guild.local.roles[remoteRole]) {
-					//Collect plugins that no longer exist
-					if (!plugins.has(pluginID)) {
-						removePlugins.push(pluginID);
-					}
-				}
-				//Remove plugins that no longer exist
-				for (const pluginID of removePlugins) {
-					delete guild.local.roles[remoteRole][pluginID];
-					guild.local.RPInstances[pluginID]!--;
-					guild.local.update = true;
-				}
-			}
-			const deleteRoles = [];
-			//Iterate over local roles
-			for (const localRole in guild.local.roles) {
-				//Collect roles missing from remote
-				if (!guild.remote.roles.has(localRole)) {
-					deleteRoles.push(localRole)
-				}
-			}
-			//Remove roles missing from remote
-			for (const localRoleID of deleteRoles) {
-				for (const pluginID in guild.local.roles[localRoleID]) {
-					guild.local.RPInstances[pluginID]!--;
-				}
-				delete guild.local.roles[localRoleID];
-				guild.local.update = true;
-			}
-			//Collect plugins that no longer exist from instances
-			const deleteInstances = [];
-			for (const pluginID in guild.local.RPInstances) {
-				if (guild.local.RPInstances[pluginID] === 0) {
-					deleteInstances.push(pluginID);
-				}
-			}
-			//Delete plugins that no longer exist from instances
-			for (const pluginID of deleteInstances) {
-				delete guild.local.RPInstances[pluginID];
-				guild.local.update = true;
-			}
+			DatabaseSync.syncGuild(guild, plugins);
+		}
+	}
 
-			//Iterate over local plugins
+	public static syncGuild(guild: {local: GuildConfig, remote: Guild}, plugins: Map<string, BotPlugin>) {
+		//Iterate over remote roles
+		for (const remoteRole of guild.remote.roles.keys()) {
+			//Create roles missing from local
+			if (!guild.local.roles[remoteRole]) {
+				guild.local.roles[remoteRole] = {};
+				guild.local.update = true;
+				continue;
+			}
 			const removePlugins = [];
-			for (const pluginID in guild.local.plugins) {
+			//Iterate over plugins in local role
+			for (const pluginID in guild.local.roles[remoteRole]) {
 				//Collect plugins that no longer exist
 				if (!plugins.has(pluginID)) {
 					removePlugins.push(pluginID);
@@ -102,39 +65,82 @@ export class DatabaseSync {
 			}
 			//Remove plugins that no longer exist
 			for (const pluginID of removePlugins) {
-				delete guild.local.plugins[pluginID];
+				delete guild.local.roles[remoteRole][pluginID];
+				guild.local.RPInstances[pluginID]!--;
 				guild.local.update = true;
 			}
-			//Iterate over loaded plugins
-			for (const plugin of plugins.values()) {
-				//Create plugins missing from local
-				if (!plugin.config && !plugin.data) {
-					if (guild.local.plugins[plugin.id]) {
-						delete guild.local.plugins[plugin.id];
-						guild.local.update = true;
-					}
-					continue;
-				}
-				if (!guild.local.plugins[plugin.id]) {
-					guild.local.plugins[plugin.id] = {};
-				}
-				if (plugin.config) {
-					guild.local.plugins[plugin.id].config = DatabaseSync.replicate(guild.local.plugins[plugin.id].config, plugin.config, guild.local, plugin.id + ".config");
-				} else if (guild.local.plugins[plugin.id].config) {
-					delete guild.local.plugins[plugin.id].config;
+		}
+		const deleteRoles = [];
+		//Iterate over local roles
+		for (const localRole in guild.local.roles) {
+			//Collect roles missing from remote
+			if (!guild.remote.roles.has(localRole)) {
+				deleteRoles.push(localRole)
+			}
+		}
+		//Remove roles missing from remote
+		for (const localRoleID of deleteRoles) {
+			for (const pluginID in guild.local.roles[localRoleID]) {
+				guild.local.RPInstances[pluginID]!--;
+			}
+			delete guild.local.roles[localRoleID];
+			guild.local.update = true;
+		}
+		//Collect plugins that no longer exist from instances
+		const deleteInstances = [];
+		for (const pluginID in guild.local.RPInstances) {
+			if (guild.local.RPInstances[pluginID] === 0) {
+				deleteInstances.push(pluginID);
+			}
+		}
+		//Delete plugins that no longer exist from instances
+		for (const pluginID of deleteInstances) {
+			delete guild.local.RPInstances[pluginID];
+			guild.local.update = true;
+		}
+
+		//Iterate over local plugins
+		const removePlugins = [];
+		for (const pluginID in guild.local.plugins) {
+			//Collect plugins that no longer exist
+			if (!plugins.has(pluginID)) {
+				removePlugins.push(pluginID);
+			}
+		}
+		//Remove plugins that no longer exist
+		for (const pluginID of removePlugins) {
+			delete guild.local.plugins[pluginID];
+			guild.local.update = true;
+		}
+		//Iterate over loaded plugins
+		for (const plugin of plugins.values()) {
+			//Create plugins missing from local
+			if (!plugin.config && !plugin.data) {
+				if (guild.local.plugins[plugin.id]) {
+					delete guild.local.plugins[plugin.id];
 					guild.local.update = true;
 				}
-				if (plugin.data) {
-					guild.local.plugins[plugin.id].data = DatabaseSync.replicate(guild.local.plugins[plugin.id].data, plugin.data, guild.local, plugin.id + ".data");
-				} else if (guild.local.plugins[plugin.id].data) {
-					delete guild.local.plugins[plugin.id].data;
-					guild.local.update = true;
-				}
+				continue;
+			}
+			if (!guild.local.plugins[plugin.id]) {
+				guild.local.plugins[plugin.id] = {};
+			}
+			if (plugin.config) {
+				guild.local.plugins[plugin.id].config = DatabaseSync.replicate(guild.local.plugins[plugin.id].config, plugin.config, guild.local, plugin.id + ".config");
+			} else if (guild.local.plugins[plugin.id].config) {
+				delete guild.local.plugins[plugin.id].config;
+				guild.local.update = true;
+			}
+			if (plugin.data) {
+				guild.local.plugins[plugin.id].data = DatabaseSync.replicate(guild.local.plugins[plugin.id].data, plugin.data, guild.local, plugin.id + ".data");
+			} else if (guild.local.plugins[plugin.id].data) {
+				delete guild.local.plugins[plugin.id].data;
+				guild.local.update = true;
 			}
 		}
 	}
 
-	private static createNewGuild(plugins: Map<string, BotPlugin>) {
+	public static createNewGuild(plugins: Map<string, BotPlugin>) {
 		return {
 			plugins: {},
 			roles: {},

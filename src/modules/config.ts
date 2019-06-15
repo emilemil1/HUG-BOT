@@ -15,7 +15,23 @@ class Config {
 	}
 
 	help(input: Input) {
-		input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
+		const description = `
+		Configure other modules.
+		⠀
+		`
+		const showConfig = `
+		\`\`\`.config [command]\`\`\`
+		`
+
+		const enableDisableModule = `
+		\`\`\`.config [command] [on/off]\`\`\`
+		`
+
+		const setConfiguration = `
+		\`\`\`.config [command] [configuration] [value]\`\`\`
+		`
+
+		input.channel.send(this.tools.embed.addField("Help", description).addField("Show Current Module Configurations", showConfig).addField("Enable/Disable Module", enableDisableModule).addField("Set Module Configuration", setConfiguration));
 	}
 
 	process(input: Input) {
@@ -61,7 +77,12 @@ class Config {
 			input.channel.send(this.tools.embed.addField(plugin.name, `**${input.parts[2].charAt(0).toUpperCase()}${input.parts[2].substring(1)}** cannot be set to '${input.parts[3]}'`));
 			return;
 		}
-		input.channel.send(this.tools.embed.addField(plugin.name, `**${input.parts[2].charAt(0).toUpperCase()}${input.parts[2].substring(1)}** has ${Config.export(newValue).has}`));
+		if (input.parts[2].toLowerCase() === "status") {
+			input.channel.send(this.tools.embed.addField(plugin.name, `**${plugin.name}** has ${Config.export(newValue).has}`));
+		} else {
+			input.channel.send(this.tools.embed.addField(plugin.name, `**${input.parts[2].charAt(0).toUpperCase()}${input.parts[2].substring(1)}** has ${Config.export(newValue).has}`));
+		}
+		
 
 		config[input.parts[2]] = newValue;
 		this.tools.markForUpdate(input.guild.id);

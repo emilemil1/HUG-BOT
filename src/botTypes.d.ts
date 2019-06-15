@@ -10,11 +10,12 @@ declare global {
 	type ConfigValidator = (prop: string, value: PluginConfigOption) => boolean
 	
 	interface BotConfig {
-		discordToken: string,
-		databasePrivateKey: string,
-		databaseType: string,
-		databaseURL: string,
+		discordToken: string
+		databasePrivateKey: string
+		databaseType: string
+		databaseURL: string
 		imgurAccessToken: string
+		googleCloudKey: string
 	}
 
 	type PluginConfigOption = null|string|string[]|{[index:string]: null|string|string[]};
@@ -55,6 +56,7 @@ declare global {
 		helpHandler: CommandHandler
 		passiveHandler?: PassiveHandler
 		catchupHandler?: () => void
+		tearDown?: () => Promise<void>
 		commands: string[]
 		config?: {[index: string]: string}
 		data?: {[index: string]: PluginConfigOption}

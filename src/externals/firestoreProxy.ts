@@ -8,7 +8,7 @@ export default class FirestoreProxy implements DatabaseProxy {
 	constructor(databaseURL: string, databasePrivateKey: string) {
 		this.app = initializeApp({
 			credential: credential.cert({
-				...require("../../acc.json"),
+				...require("../../firebase-acc.json"),
 				private_key: databasePrivateKey.replace(/\\n/g, "\n")
 			}),
 			databaseURL: databaseURL

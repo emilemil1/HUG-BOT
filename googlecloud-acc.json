@@ -1,0 +1,11 @@
+{
+  "type": "service_account",
+  "project_id": "hug-bot",
+  "private_key_id": "6eff89c5c2f225b33107ee07ae37ae75c9cdb3d3",
+  "client_email": "starting-account-4uesd3dpgyqu@hug-bot.iam.gserviceaccount.com",
+  "client_id": "104656929535011414736",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/starting-account-4uesd3dpgyqu%40hug-bot.iam.gserviceaccount.com"
+}

@@ -15,7 +15,15 @@ class Meme {
 	}
 
 	help(input: Input) {
-		input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
+		const description = `
+		Get your hands on a spicy meme.
+		⠀
+		`
+		const usage = `
+		\`\`\`.meme [search]\`\`\`
+		`
+
+		input.channel.send(this.tools.embed.addField("Help", description).addField("Usage", usage));
 	}
 
 	process(input: Input) {

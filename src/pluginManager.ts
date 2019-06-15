@@ -13,10 +13,10 @@ export default class PluginManager {
 			plugins: this.plugins,
 			commands: this.commands
 		}
-		const files = readdirSync("src/plugins");
+		const files = readdirSync("src/modules");
 		for (let file of files) {
 			file = file.substring(0, file.lastIndexOf("."));
-			const PluginFile = require("./plugins/" + file + ".js");
+			const PluginFile = require("./modules/" + file + ".js");
 			new PluginFile(new PluginBuilder(this.registerPlugin.bind(this)));
 		}
 	}
@@ -57,6 +57,7 @@ export default class PluginManager {
 			helpHandler: pluginBuilder.helpHandler,
 			passiveHandler: pluginBuilder.passiveHandler,
 			catchupHandler: pluginBuilder.catchupHandler,
+			tearDown: pluginBuilder.tearDown,
 			commands: pluginBuilder.commands,
 			config: pluginBuilder.config,
 			data: pluginBuilder.data,
@@ -99,6 +100,7 @@ export class PluginBuilder {
 	helpHandler?: CommandHandler;
 	passiveHandler?: PassiveHandler
 	catchupHandler?: () => void
+	tearDown?: () => Promise<void>
 	commands?: string[];
 	config?: {[index: string]: string};
 	data?: {[index: string]: PluginConfigOption};

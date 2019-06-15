@@ -15,7 +15,15 @@ class Nickname {
 	}
 
 	help(input: Input) {
-		input.channel.send(this.tools.embed.addField("Placeholder", "Placeholder"));
+		const description = `
+		Change the nickname of the bot.
+		⠀
+		`
+		const usage = `
+		\`\`\`.nick [name]\`\`\`
+		`
+
+		input.channel.send(this.tools.embed.addField("Help", description).addField("Usage", usage));
 	}
 
 	process(input: Input) {

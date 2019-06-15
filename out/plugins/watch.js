@@ -90,11 +90,13 @@ class Watch {
         this.silent = silent;
     }
     passive(message) {
+        return;
         if (!this.regex) {
             this.buildRegex(message);
             this.matches = this.tools.getConfigs(message.guild.id)["watch"].data.matches;
             this.silent = this.tools.getConfigs(message.guild.id)["watch"].data.silent;
         }
+        
         let result;
         const silentUsers = [];
         while (null !== (result = this.regex.exec(message.content))) {

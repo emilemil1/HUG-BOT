@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
-const firestoreProxy_1 = require("./databaseProxy/firestoreProxy");
+const firestoreProxy_1 = require("./externals/firestoreProxy");
 const pluginManager_1 = require("./pluginManager");
-const dbSync_1 = require("./databaseProxy/dbSync");
+const dbSync_1 = require("./externals/dbSync");
 class Bot {
     constructor(botConfig) {
         this.client = new discord_js_1.Client();
@@ -28,6 +28,15 @@ class Bot {
                 return;
         }
         this.client.on("message", this.getMessage.bind(this));
+        this.client.on("guildCreate", (guild) => {
+            if (!this.guilds[guild.id]) {
+                this.guilds[guild.id] = dbSync_1.DatabaseSync.createNewGuild(this.pluginManager.plugins);
+                dbSync_1.DatabaseSync.syncGuild({
+                    local: this.guilds[guild.id],
+                    remote: guild
+                }, this.pluginManager.plugins);
+            }
+        });
         console.log("Reading plugins...");
         this.pluginManager = new pluginManager_1.default({
             client: this.client,
@@ -52,6 +61,7 @@ class Bot {
         });
         console.log("Syncing database...");
         dbSync_1.DatabaseSync.syncDatabase(this.client.guilds, this.guilds, this.pluginManager.plugins);
+        this.client.emit("sync");
         this.database.ready = true;
         console.log("Connected!");
     }
@@ -63,6 +73,12 @@ class Bot {
         if (this.database.ready) {
             promises.push(this.database.write(this.guilds)
                 .then(this.database.disconnect()));
+        }
+        for (const plugin of this.pluginManager.plugins.values()) {
+            if (!plugin.tearDown) {
+                continue;
+            }
+            promises.push(plugin.tearDown());
         }
         await Promise.all(promises);
         if (!restart) {
